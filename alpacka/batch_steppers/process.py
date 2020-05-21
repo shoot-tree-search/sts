@@ -17,6 +17,7 @@ class ProcessBatchStepper(core.BatchStepper):
         self, env_class, agent_class, network_fn, n_envs, output_dir,
         process_class=mp.Process,
     ):
+        # TODO(xxx): If necessary, add an option to compress episodes.
         super().__init__(env_class, agent_class, network_fn, n_envs, output_dir)
 
         config = worker_utils.get_config(env_class, agent_class, network_fn)
@@ -38,6 +39,7 @@ class ProcessBatchStepper(core.BatchStepper):
                 network_fn=network_fn,
                 config=config,
                 init_hooks=worker_utils.init_hooks,
+                compress_episodes=False,
             )
             queue_in = mp.Queue()
             queue_out = mp.Queue()

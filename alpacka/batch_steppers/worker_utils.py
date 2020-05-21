@@ -1,5 +1,8 @@
 """Utilities for BatchSteppers running in separate workers."""
 
+import lzma
+import pickle
+
 import gin
 
 from alpacka.batch_steppers import core
@@ -34,7 +37,13 @@ class Worker:
     """Class used to step agent-environment-network in a separate worker."""
 
     def __init__(
-        self, env_class, agent_class, network_fn, config, init_hooks,
+        self,
+        env_class,
+        agent_class,
+        network_fn,
+        config,
+        init_hooks,
+        compress_episodes,
     ):
         # Limit number of threads used between independent tf.op-s to 1.
         import tensorflow as tf  # pylint: disable=import-outside-toplevel
@@ -50,12 +59,26 @@ class Worker:
         self.env = env_class()
         self.agent = agent_class()
         self._request_handler = core.RequestHandler(network_fn)
+        self._compress_episodes = compress_episodes
 
     def run(self, params, solve_kwargs):
         """Runs the episode using the given network parameters."""
         episode_cor = self.agent.solve(self.env, **solve_kwargs)
-        return self._request_handler.run_coroutine(episode_cor, params)
+        episode = self._request_handler.run_coroutine(episode_cor, params)
+        if self._compress_episodes:
+            episode = compress_episode(episode)
+        return episode
 
     @property
     def network(self):
         return self._request_handler.network
+
+
+def compress_episode(episode):
+    """Compresses an episode to a byte string."""
+    return lzma.compress(pickle.dumps(episode))
+
+
+def decompress_episode(data):
+    """Decompresses an episode from a byte string."""
+    return pickle.loads(lzma.decompress(data))

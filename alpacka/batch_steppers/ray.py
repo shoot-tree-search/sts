@@ -30,7 +30,15 @@ class RayBatchStepper(core.BatchStepper):
     zero-copy operation on each node.
     """
 
-    def __init__(self, env_class, agent_class, network_fn, n_envs, output_dir):
+    def __init__(
+        self,
+        env_class,
+        agent_class,
+        network_fn,
+        n_envs,
+        output_dir,
+        compress_episodes=True,
+    ):
         super().__init__(env_class, agent_class, network_fn, n_envs, output_dir)
 
         config = worker_utils.get_config(env_class, agent_class, network_fn)
@@ -43,14 +51,19 @@ class RayBatchStepper(core.BatchStepper):
                 'object_store_memory': int(1e9),
             }
             ray.init(**kwargs)
-        self.workers = [ray_worker_cls.remote(  # pylint: disable=no-member
-            env_class, agent_class, network_fn, config, worker_utils.init_hooks)
-            for _ in range(n_envs)]
+        self.workers = [
+            ray_worker_cls.remote(  # pylint: disable=no-member
+                env_class, agent_class, network_fn, config,
+                worker_utils.init_hooks, compress_episodes
+            )
+            for _ in range(n_envs)
+        ]
 
         self._params = RayObject(None, None)
         self._solve_kwargs_per_worker = [
             RayObject(None, None) for _ in range(self.n_envs)
         ]
+        self._compress_episodes = compress_episodes
 
     def _run_episode_batch(self, params, solve_kwargs_per_agent):
         # Optimization, don't send the same parameters again.
@@ -73,4 +86,9 @@ class RayBatchStepper(core.BatchStepper):
             for w, solve_kwargs in
             zip(self.workers, self._solve_kwargs_per_worker)]
         )
+        if self._compress_episodes:
+            episodes = [
+                worker_utils.decompress_episode(episode)
+                for episode in episodes
+            ]
         return episodes
