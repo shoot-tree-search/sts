@@ -1,7 +1,7 @@
 
 # Alpacka
 
-This repository provides the implementation of agents introduced in the "Structure and randomness in planning and reinforcement learning" paper. It won't be maintained, but we are happy to discuss any concerns in the issues.
+This repository provides the implementation of agents introduced in the "Structure and randomness in planning and reinforcement learning" paper. We are happy to discuss any concerns in the issues.
 
 ## Quickstart
 
