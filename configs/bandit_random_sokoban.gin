@@ -1,0 +1,42 @@
+import alpacka.tracing
+
+# Parameters for Sokoban:
+# ==============================================================================
+Sokoban.dim_room = (6, 6)
+Sokoban.max_steps = -1 # Doesn't do anything!
+Sokoban.num_boxes = 2
+Sokoban.penalty_for_step = 0
+Sokoban.reward_box_on_target = 0.5
+Sokoban.reward_finished = 1
+Sokoban.seed = None # Note it will be the same for all Runner envs!
+
+# Parameters for TraceCallback:
+# ==============================================================================
+TraceCallback.output_dir = 'out/traces'
+TraceCallback.sample_rate = 1
+
+# Parameters for BanditAgent:
+# ==============================================================================
+# BanditAgent.callback_classes = (@alpacka.tracing.TraceCallback,)
+BanditAgent.n_rollouts = 125
+BanditAgent.rollout_time_limit = 20
+BanditAgent.estimate_fn = @alpacka.agents.mc_simulation.truncated_return
+BanditAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+BanditAgent.agent_class = @alpacka.agents.RandomAgent
+BanditAgent.n_envs = 1
+BanditAgent.discount = 0.95
+BanditAgent.prior_noise = None
+BanditAgent.exploration_weight = 2.0
+BanditAgent.bonus_fn = @alpacka.agents.mc_simulation.ucb_bonus
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.BanditAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+Runner.env_class = @alpacka.envs.Sokoban
+Runner.n_envs = 1
+Runner.episode_time_limit = 50
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 0
+Runner.network_class = @alpacka.networks.DummyNetwork
+Runner.trainer_class = @alpacka.trainers.DummyTrainer

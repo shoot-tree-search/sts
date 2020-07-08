@@ -1,0 +1,80 @@
+import alpacka.runner_callbacks
+
+# Parameters for CartPole:
+# ==============================================================================
+CartPole.solved_at = 150
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', 'categorical_crossentropy')
+KerasNetwork.loss_weights = [1.0, 10.0]
+KerasNetwork.metrics = [['mae', 'mse'], ['categorical_crossentropy']]
+KerasNetwork.model_fn = @alpacka.networks.keras.mlp
+KerasNetwork.optimizer = 'adam'
+KerasNetwork.weight_decay = 0.0
+KerasNetwork.train_callbacks = None
+
+# Parameters for LocalBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for StochasticMCTSAgent:
+# ==============================================================================
+StochasticMCTSAgent.discount = 0.99
+StochasticMCTSAgent.exploration_bonus_fn = @alpacka.agents.stochastic_mcts.puct_exploration_bonus
+StochasticMCTSAgent.exploration_weight = 10.0
+StochasticMCTSAgent.n_passes = 10
+StochasticMCTSAgent.new_leaf_rater_class = @alpacka.agents.stochastic_mcts.ValueNetworkNewLeafRater
+StochasticMCTSAgent.action_selection_mode = 'count'
+StochasticMCTSAgent.sampling_temperature = 0.3
+StochasticMCTSAgent.depth_limit = 50
+
+# Parameters for mlp:
+# ==============================================================================
+mlp.activation = 'relu'
+mlp.hidden_sizes = (64,)
+mlp.output_activation = (None, 'softmax')
+mlp.output_zero_init = True
+
+# Parameters for puct_exploration_bonus:
+# ==============================================================================
+# None.
+
+# Parameters for ValueNetworkNewLeafRater:
+# ==============================================================================
+ValueNetworkNewLeafRater.use_policy = True
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.StochasticMCTSAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.CartPole
+Runner.n_envs = 64
+Runner.episode_time_limit = 500
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 2
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+Runner.callback_classes = (@alpacka.runner_callbacks.EvaluationCallback,)
+
+# Parameters for EvaluationCallback:
+# ==============================================================================
+EvaluationCallback.n_envs = 64
+EvaluationCallback.episode_time_limit = 500
+EvaluationCallback.eval_period = 10
+EvaluationCallback.agent_kwargs = {}
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.target = (
+    @alpacka.trainers.supervised.target_value,
+    @alpacka.trainers.supervised.target_action_histogram_smooth,
+)
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 100
+SupervisedTrainer.replay_buffer_capacity = 1000000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']
+
+# Parameters for target_solved:
+# ==============================================================================
+# None.

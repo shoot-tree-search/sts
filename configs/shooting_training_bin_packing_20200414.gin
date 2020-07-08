@@ -1,0 +1,65 @@
+
+# Parameters for BinPacking
+# ==============================================================================
+# No time limit from environment, use Runner.episode_time_limit instead.
+BinPacking.time_horizon=999999
+BinPacking.reward_scale=0.01
+BinPacking.bin_observation_scale=0.01
+
+# Parameters for RMSprop
+# ==============================================================================
+RMSprop.learning_rate = 0.00001
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', @tf.nn.softmax_cross_entropy_with_logits)
+KerasNetwork.loss_weights = None
+KerasNetwork.metrics = [['mae'], []]
+KerasNetwork.model_fn = @alpacka.networks.keras.mlp
+KerasNetwork.optimizer = @tf.keras.optimizers.RMSprop()
+KerasNetwork.weight_decay = 0.0001
+KerasNetwork.train_callbacks = None
+
+# Parameters for SoftmaxAgent:
+# ==============================================================================
+SoftmaxAgent.with_critic = True
+
+# Parameters for ShootingAgent:
+# ==============================================================================
+ShootingAgent.n_rollouts = 192
+ShootingAgent.rollout_time_limit = 5
+ShootingAgent.aggregate_fn = @np.mean
+ShootingAgent.estimate_fn = @alpacka.agents.mc_simulation.bootstrap_return_with_value
+ShootingAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+ShootingAgent.agent_class = @alpacka.agents.SoftmaxAgent
+ShootingAgent.n_envs = 24
+ShootingAgent.discount = 0.95
+
+# Parameters for mlp:
+# ==============================================================================
+mlp.activation = 'relu'
+mlp.hidden_sizes = (128, 128)
+mlp.output_activation = (None, None)
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.ShootingAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.BinPacking
+Runner.n_envs = 24
+Runner.episode_time_limit = 100
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 5
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.target = (
+    @alpacka.trainers.supervised.target_value,
+    @alpacka.trainers.supervised.target_action_histogram,
+)
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 300
+SupervisedTrainer.replay_buffer_sampling_hierarchy = []
+SupervisedTrainer.replay_buffer_capacity = 10000

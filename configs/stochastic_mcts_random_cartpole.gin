@@ -1,0 +1,60 @@
+import alpacka.runner_callbacks
+
+# Parameters for CartPole:
+# ==============================================================================
+# None.
+
+# Parameters for DummyNetwork:
+# ==============================================================================
+# None.
+
+# Parameters for DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for LocalBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for StochasticMCTSAgent:
+# ==============================================================================
+StochasticMCTSAgent.discount = 0.99
+StochasticMCTSAgent.exploration_bonus_fn = @alpacka.agents.stochastic_mcts.puct_exploration_bonus
+StochasticMCTSAgent.exploration_weight = 10.0
+StochasticMCTSAgent.n_passes = 5
+StochasticMCTSAgent.new_leaf_rater_class = @alpacka.agents.stochastic_mcts.RolloutNewLeafRater
+StochasticMCTSAgent.action_selection_mode = 'count'
+StochasticMCTSAgent.sampling_temperature = 0.0
+
+# Parameters for RandomAgent:
+# ==============================================================================
+# None.
+
+# Parameters for puct_exploration_bonus:
+# ==============================================================================
+# None.
+
+# Parameters for RolloutNewLeafRater:
+# ==============================================================================
+RolloutNewLeafRater.rollout_agent_class = @alpacka.agents.RandomAgent
+RolloutNewLeafRater.rollout_time_limit = 50
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.StochasticMCTSAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+Runner.env_class = @alpacka.envs.CartPole
+Runner.n_envs = 1
+Runner.episode_time_limit = 500
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 0
+Runner.network_class = @alpacka.networks.DummyNetwork
+Runner.trainer_class = @alpacka.trainers.DummyTrainer
+Runner.callback_classes = (@alpacka.runner_callbacks.EvaluationCallback,)
+
+# Parameters for EvaluationCallback:
+# ==============================================================================
+EvaluationCallback.n_envs = 1
+EvaluationCallback.episode_time_limit = 500
+EvaluationCallback.eval_period = 10
+EvaluationCallback.agent_kwargs = {}

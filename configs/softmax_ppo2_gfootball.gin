@@ -1,0 +1,34 @@
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.env_name = 'academy_corner'
+GoogleFootball.representation = 'extracted'
+GoogleFootball.stacked = True
+
+# Parameters for TFMetaGraphNetwork:
+# ==============================================================================
+TFMetaGraphNetwork.model_path = 'fixtures/tf_metagraph_checkpoint/baseline_ppo2_in_gfootball_academy_corner'
+
+# Parameters for DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for LocalBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for SoftmaxAgent:
+# ==============================================================================
+# None.
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.SoftmaxAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {'dump_path': './out'}
+Runner.n_envs = 16
+Runner.episode_time_limit = None
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 0
+Runner.network_class = @alpacka.networks.TFMetaGraphNetwork
+Runner.trainer_class = @alpacka.trainers.DummyTrainer

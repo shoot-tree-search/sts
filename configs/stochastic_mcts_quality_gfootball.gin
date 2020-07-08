@@ -1,0 +1,99 @@
+import alpacka.runner_callbacks
+import alpacka.tracing
+
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.env_name = 'academy_empty_goal'
+GoogleFootball.representation = 'extracted'
+GoogleFootball.stacked = False
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', 'categorical_crossentropy')
+KerasNetwork.loss_weights = [1.0, 0.001]
+KerasNetwork.metrics = [['mae', 'mse'], ['categorical_crossentropy']]
+KerasNetwork.model_fn = @alpacka.networks.keras.convnet_mnist
+KerasNetwork.optimizer = 'adam'
+KerasNetwork.weight_decay = 1e-6
+KerasNetwork.train_callbacks = None
+
+# Parameters for LocalBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for StochasticMCTSAgent:
+# ==============================================================================
+StochasticMCTSAgent.discount = 0.99
+StochasticMCTSAgent.exploration_bonus_fn = @alpacka.agents.stochastic_mcts.puct_exploration_bonus
+StochasticMCTSAgent.exploration_weight = 1.0
+StochasticMCTSAgent.n_passes = 30
+StochasticMCTSAgent.depth_limit = 100
+StochasticMCTSAgent.new_leaf_rater_class = @alpacka.agents.stochastic_mcts.QualityNetworkNewLeafRater
+StochasticMCTSAgent.action_selection_mode = 'count'
+StochasticMCTSAgent.sampling_temperature = 0.3
+StochasticMCTSAgent.prior_noise_weight = 0.1
+StochasticMCTSAgent.prior_noise_parameter = 0.03
+StochasticMCTSAgent.callback_classes = (@alpacka.tracing.TraceCallback,)
+
+# Parameters for TraceCallback:
+# ==============================================================================
+TraceCallback.output_dir = './traces/'
+TraceCallback.sample_rate = 0.003
+
+# Parameters for convnet_mnist:
+# ==============================================================================
+convnet_mnist.activation = 'relu'
+convnet_mnist.n_conv_layers = 4
+convnet_mnist.d_conv = 16
+convnet_mnist.d_ff = 64
+convnet_mnist.output_activation = (None, 'softmax')
+convnet_mnist.output_zero_init = True
+convnet_mnist.strides = (2, 2)
+
+# Parameters for puct_exploration_bonus:
+# ==============================================================================
+# None.
+
+# Parameters for QualityNetworkNewLeafRater:
+# ==============================================================================
+QualityNetworkNewLeafRater.use_policy = True
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.StochasticMCTSAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {}
+Runner.n_envs = 32
+Runner.episode_time_limit = 100
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 10
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+Runner.callback_classes = (@alpacka.runner_callbacks.EvaluationCallback,)
+
+# Parameters for EvaluationCallback:
+# ==============================================================================
+EvaluationCallback.n_envs = 32
+EvaluationCallback.episode_time_limit = 100
+EvaluationCallback.eval_period = 10
+EvaluationCallback.agent_kwargs = {'sampling_temperature': 0.0, 'prior_noise_weight': 0.0}
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.target = (
+    @alpacka.trainers.supervised.target_qualities,
+    @alpacka.trainers.supervised.target_action_histogram_smooth,
+)
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 1000
+SupervisedTrainer.replay_buffer_capacity = 30000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']
+
+# Parameters for target_qualities:
+# ==============================================================================
+# None.
+
+# Parameters for target_action_histogram:
+# ==============================================================================
+# None.

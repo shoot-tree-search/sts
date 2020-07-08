@@ -1,0 +1,96 @@
+# Config for short GRF training with BanditAgent. Tuned (but not much) to
+# maximize solved rate on 1h job on 24 core machine. (For longer training it
+# might be better to use larger discount and smaller learning rate).
+#
+# Scenarios
+#   Scenario 'academy_3_vs_1_with_keeper' is relatively stable problem on which
+#   progress within 1h can be seen. Other scenarios which shows progress within
+#   1h in some cases are
+#       'academy_corner',
+#       'academy_empty_goal_close',
+#       'academy_pass_and_shoot_with_keeper',
+#       'academy_run_pass_and_shoot_with_keeper'
+#       'academy_run_to_score'
+#   but these are unstable.
+#
+# WARNINGS:
+#   Very low discount factor of 0.95, for longer training 0.99 might be better.
+#   Low episode_time_limit - might be not enough for other football problems.
+
+import alpacka.runner_callbacks
+import alpacka.tracing
+
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.env_name = 'academy_3_vs_1_with_keeper'
+GoogleFootball.representation = 'extracted'
+GoogleFootball.stacked = False
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', @tf.nn.softmax_cross_entropy_with_logits)
+KerasNetwork.loss_weights = [1.0, 0.01]
+KerasNetwork.metrics = [['mae'], []]
+KerasNetwork.model_fn = @alpacka.networks.keras.convnet_mnist
+KerasNetwork.optimizer = 'adam'
+KerasNetwork.weight_decay = 1e-6
+KerasNetwork.train_callbacks = None
+
+# Parameters for SoftmaxGreedyAgent:
+# ==============================================================================
+SoftmaxAgent.with_critic = True
+SoftmaxAgent.temperature = 2.0
+
+# Parameters for BanditAgent:
+# ==============================================================================
+BanditAgent.n_rollouts = 30
+BanditAgent.rollout_time_limit = 10
+BanditAgent.estimate_fn = @alpacka.agents.mc_simulation.bootstrap_return_with_value
+BanditAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+BanditAgent.agent_class = @alpacka.agents.SoftmaxAgent
+BanditAgent.n_envs = 1
+BanditAgent.discount = 0.99
+BanditAgent.prior_noise = None
+BanditAgent.exploration_weight = 2.5
+
+# Parameters for convnet_mnist:
+# ==============================================================================
+convnet_mnist.activation = 'relu'
+convnet_mnist.n_conv_layers = 4
+convnet_mnist.d_conv = 16
+convnet_mnist.d_ff = 64
+convnet_mnist.output_activation = (None, None)
+convnet_mnist.output_zero_init = True
+convnet_mnist.strides = (2, 2)
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.BanditAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {}
+Runner.n_envs = 30
+Runner.episode_time_limit = 100
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 10
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+Runner.callback_classes = (@alpacka.runner_callbacks.EvaluationCallback,)
+
+# Parameters for EvaluationCallback:
+# ==============================================================================
+EvaluationCallback.n_envs = 30
+EvaluationCallback.episode_time_limit = 100
+EvaluationCallback.eval_period = 50
+EvaluationCallback.agent_kwargs = {'exploration_weight': 2.0}
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.target = (
+    @alpacka.trainers.supervised.target_discounted_return,
+    @alpacka.trainers.supervised.target_action_histogram,
+)
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 1000
+SupervisedTrainer.replay_buffer_capacity = 30000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']
