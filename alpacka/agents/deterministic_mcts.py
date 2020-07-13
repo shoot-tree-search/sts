@@ -180,6 +180,8 @@ class DeterministicMCTSAgent(base.OnlineAgent):
         avoid_loops=True,
         value_traits_class=ScalarValueTraits,
         value_accumulator_class=ScalarValueAccumulator,
+        n_leaves_to_expand=1,
+        backpropagate_intermediate_expansion=False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -191,6 +193,9 @@ class DeterministicMCTSAgent(base.OnlineAgent):
         self._state2node = {}
         self._model = None
         self._root = None
+        self._n_leaves_to_expand = n_leaves_to_expand
+        self._backpropagate_intermediate_expansion = \
+            backpropagate_intermediate_expansion
 
     def _children_of_state(self, parent_state):
         old_state = self._model.clone_state()
@@ -217,8 +222,7 @@ class DeterministicMCTSAgent(base.OnlineAgent):
         # search_path = list of tuples (node, action)
         # leaf does not belong to search_path (important for not double counting
         # its value)
-        leaf, search_path = self._traverse()
-        value = yield from self._expand_leaf(leaf)
+        _, search_path, depth, value = yield from self._traverse()
         self._backpropagate(search_path, value)
 
     def _traverse(self):
@@ -227,17 +231,40 @@ class DeterministicMCTSAgent(base.OnlineAgent):
         search_path = []
         # new_node is None iff node has no unseen children, i.e. it is Dead
         # End
+        traverse_depth = 0
+        n_leaves_left = self._n_leaves_to_expand
+
         while node is not None and node.expanded():
+            traverse_depth += 1
             seen_states.add(node.state)
             # INFO: if node Dead End, (new_node, action) = (None, None)
             # INFO: _select_child can SAMPLE an action (to break tie)
             states_to_avoid = seen_states if self._avoid_loops else set()
             new_node, action = self._select_child(node, states_to_avoid)  #
             search_path.append((node, action))
+
+            if (new_node is not None
+                and not new_node.expanded()
+                and n_leaves_left > 0
+            ):
+                value = yield from self._expand_leaf(new_node)
+                n_leaves_left -= 1
+                if (self._backpropagate_intermediate_expansion and
+                    n_leaves_left > 0
+                ):
+                    self._backpropagate(search_path, value)
+
             node = new_node
+
+        # Corner cases:
+        #   dead_end_state
+        #   first pass of the search, root is not yet expanded
+        if (node is None or not search_path):
+            value = yield from self._expand_leaf(node)
+
         # at this point node represents a leaf in the tree (and is None for Dead
         # End). node does not belong to search_path.
-        return node, search_path
+        return node, search_path, traverse_depth, value
 
     def _backpropagate(self, search_path, value):
         # Note that a pair
