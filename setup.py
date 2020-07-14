@@ -19,7 +19,7 @@ setup(
         'tensorflow>=2.2.0',
     ],
     extras_require={
-        'dev': ['pylint==2.4.4', 'pylint_quotes', 'pytest', 'ray[debug]'],
+        'dev': ['pylint==2.4.4', 'pylint_quotes', 'pytest', 'ray[debug]==0.8.5'],
         'tracex': ['flask', 'opencv-python', 'Pillow'],
     }
 )
