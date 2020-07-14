@@ -1,0 +1,60 @@
+# Parameters for DummyNetwork:
+# ==============================================================================
+# None.
+
+# Parameters for dummy.DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for trainers.DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.dump_path = None
+GoogleFootball.env_name = 'academy_3_vs_1_with_keeper'
+# GoogleFootball.env_name = 'academy_corner'
+# GoogleFootball.env_name = 'academy_counterattack_easy'
+# GoogleFootball.env_name = 'academy_counterattack_hard'
+# GoogleFootball.env_name = 'academy_empty_goal'
+# GoogleFootball.env_name = 'academy_empty_goal_close'
+# GoogleFootball.env_name = 'academy_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_to_score'
+# GoogleFootball.env_name = 'academy_run_to_score_with_keeper'
+# GoogleFootball.env_name = 'academy_single_goal_versus_lazy'
+GoogleFootball.representation = 'simple115'
+GoogleFootball.rewards = 'scoring,checkpoints'
+GoogleFootball.solved_at = 1
+GoogleFootball.stacked = False
+
+# Parameters for RandomAgent:
+# ==============================================================================
+RandomAgent.callback_classes = ()
+
+# Parameters for RayBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.ShootingAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.callback_classes = ()
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {'dump_path': './out'}
+Runner.episode_time_limit = None
+Runner.n_envs = 20
+Runner.n_epochs = 1
+Runner.n_precollect_epochs = 0
+Runner.network_class = @alpacka.networks.DummyNetwork
+Runner.trainer_class = @alpacka.trainers.DummyTrainer
+
+# Parameters for ShootingAgent:
+# ==============================================================================
+ShootingAgent.agent_class = @alpacka.agents.RandomAgent
+ShootingAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+ShootingAgent.n_envs = 1
+ShootingAgent.n_rollouts = 30
+ShootingAgent.rollout_time_limit = 10

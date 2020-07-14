@@ -1,0 +1,98 @@
+import alpacka.runner_callbacks
+
+# Parameters for ActorCriticAgent:
+# ==============================================================================
+# None.
+
+# Parameters for BanditAgent:
+# ==============================================================================
+BanditAgent.agent_class = @alpacka.agents.SoftmaxAgent
+BanditAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+BanditAgent.discount = 0.99
+BanditAgent.estimate_fn = @alpacka.agents.mc_simulation.bootstrap_return_with_value
+BanditAgent.exploration_weight = 2.5
+BanditAgent.n_envs = 1
+BanditAgent.n_rollouts = 30
+BanditAgent.prior_noise = None
+BanditAgent.rollout_time_limit = 10
+
+# Parameters for convnet_mnist:
+# ==============================================================================
+convnet_mnist.activation = 'relu'
+convnet_mnist.d_conv = 16
+convnet_mnist.d_ff = 64
+convnet_mnist.global_average_pooling = False
+convnet_mnist.n_conv_layers = 4
+convnet_mnist.output_activation = (None, None)
+convnet_mnist.output_zero_init = True
+convnet_mnist.strides = (2, 2)
+
+# Parameters for EvaluationCallback:
+# ==============================================================================
+EvaluationCallback.agent_kwargs = {'exploration_weight': 2.0}
+EvaluationCallback.episode_time_limit = 100
+EvaluationCallback.eval_period = 50
+EvaluationCallback.n_envs = 32
+
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.dump_path = None
+GoogleFootball.env_name = 'academy_3_vs_1_with_keeper'
+# GoogleFootball.env_name = 'academy_corner'
+# GoogleFootball.env_name = 'academy_counterattack_easy'
+# GoogleFootball.env_name = 'academy_counterattack_hard'
+# GoogleFootball.env_name = 'academy_empty_goal'
+# GoogleFootball.env_name = 'academy_empty_goal_close'
+# GoogleFootball.env_name = 'academy_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_to_score'
+# GoogleFootball.env_name = 'academy_run_to_score_with_keeper'
+# GoogleFootball.env_name = 'academy_single_goal_versus_lazy'
+GoogleFootball.representation = 'extracted'
+GoogleFootball.rewards = 'scoring,checkpoints'
+GoogleFootball.solved_at = 1
+GoogleFootball.stacked = False
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', @tf.nn.softmax_cross_entropy_with_logits)
+KerasNetwork.loss_weights = [1.0, 0.01]
+KerasNetwork.metrics = [['mae'], []]
+KerasNetwork.model_fn = @alpacka.networks.keras.convnet_mnist
+KerasNetwork.optimizer = 'adam'
+KerasNetwork.train_callbacks = None
+KerasNetwork.weight_decay = 1e-06
+
+# Parameters for RayBatchStepper:
+# ==============================================================================
+RayBatchStepper.compress_episodes = True
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.BanditAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.callback_classes = (@alpacka.runner_callbacks.EvaluationCallback,)
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {}
+Runner.episode_time_limit = 100
+Runner.n_envs = 30
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 10
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+
+# Parameters for SoftmaxAgent:
+# ==============================================================================
+SoftmaxAgent.linear_annealing_kwargs = None
+SoftmaxAgent.temperature = 2.0
+SoftmaxAgent.with_critic = True
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 1000
+SupervisedTrainer.replay_buffer_capacity = 30000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']
+SupervisedTrainer.target = \
+    (@alpacka.trainers.supervised.target_discounted_return,
+     @alpacka.trainers.supervised.target_action_histogram)

@@ -1,0 +1,84 @@
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.dump_path = None
+GoogleFootball.env_name = 'academy_3_vs_1_with_keeper'
+# GoogleFootball.env_name = 'academy_corner'
+# GoogleFootball.env_name = 'academy_counterattack_easy'
+# GoogleFootball.env_name = 'academy_counterattack_hard'
+# GoogleFootball.env_name = 'academy_empty_goal'
+# GoogleFootball.env_name = 'academy_empty_goal_close'
+# GoogleFootball.env_name = 'academy_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_to_score'
+# GoogleFootball.env_name = 'academy_run_to_score_with_keeper'
+# GoogleFootball.env_name = 'academy_single_goal_versus_lazy'
+GoogleFootball.representation = 'simple115'
+GoogleFootball.rewards = 'scoring,checkpoints'
+GoogleFootball.solved_at = 1
+GoogleFootball.stacked = False
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = ('mean_squared_error', @tf.nn.softmax_cross_entropy_with_logits)
+KerasNetwork.loss_weights = None
+KerasNetwork.metrics = [['mae'], []]
+KerasNetwork.model_fn = @alpacka.networks.keras.mlp
+KerasNetwork.optimizer = @tf.keras.optimizers.RMSprop()
+KerasNetwork.train_callbacks = None
+KerasNetwork.weight_decay = 0.0
+
+# Parameters for mlp:
+# ==============================================================================
+mlp.activation = 'relu'
+mlp.hidden_sizes = (64, 64)
+mlp.output_activation = (None, None)
+mlp.output_zero_init = False
+
+# Parameters for RMSprop:
+# ==============================================================================
+RMSprop.centered = False
+RMSprop.epsilon = 1e-07
+RMSprop.learning_rate = 0.0001
+RMSprop.momentum = 0.0
+RMSprop.name = 'RMSprop'
+RMSprop.rho = 0.9
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.ShootingAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {}
+Runner.episode_time_limit = None
+Runner.n_envs = 30
+Runner.n_epochs = None
+Runner.n_precollect_epochs = 10
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+
+# Parameters for ShootingAgent:
+# ==============================================================================
+ShootingAgent.agent_class = @alpacka.agents.SoftmaxAgent
+ShootingAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+ShootingAgent.discount = 0.99
+ShootingAgent.estimate_fn = @alpacka.agents.mc_simulation.bootstrap_return_with_value
+ShootingAgent.n_envs = 1
+ShootingAgent.n_rollouts = 30
+ShootingAgent.rollout_time_limit = 10
+
+# Parameters for SoftmaxAgent:
+# ==============================================================================
+SoftmaxAgent.linear_annealing_kwargs = None
+SoftmaxAgent.temperature = 2.0
+SoftmaxAgent.with_critic = True
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.target = (
+    @alpacka.trainers.supervised.target_discounted_return,
+    @alpacka.trainers.supervised.target_action_histogram,
+)
+SupervisedTrainer.batch_size = 64
+SupervisedTrainer.n_steps_per_epoch = 1000
+SupervisedTrainer.replay_buffer_capacity = 30000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']

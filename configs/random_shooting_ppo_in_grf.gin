@@ -1,0 +1,70 @@
+# Parameters for dummy.DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for trainers.DummyTrainer:
+# ==============================================================================
+# None.
+
+# Parameters for GoogleFootball:
+# ==============================================================================
+GoogleFootball.dump_path = None
+GoogleFootball.env_name = 'academy_3_vs_1_with_keeper'
+# NOTE: You need to change the path to a PPO checkpoint at the end of the file!
+# GoogleFootball.env_name = 'academy_corner'
+# GoogleFootball.env_name = 'academy_counterattack_easy'
+# GoogleFootball.env_name = 'academy_counterattack_hard'
+# GoogleFootball.env_name = 'academy_empty_goal'
+# GoogleFootball.env_name = 'academy_empty_goal_close'
+# GoogleFootball.env_name = 'academy_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_pass_and_shoot_with_keeper'
+# GoogleFootball.env_name = 'academy_run_to_score'
+# GoogleFootball.env_name = 'academy_run_to_score_with_keeper'
+# GoogleFootball.env_name = 'academy_single_goal_versus_lazy'
+GoogleFootball.representation = 'extracted'
+GoogleFootball.rewards = 'scoring,checkpoints'
+GoogleFootball.solved_at = 1
+GoogleFootball.stacked = True
+
+# Parameters for PolicyNetworkAgent:
+# ==============================================================================
+# None.
+
+# Parameters for RayBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.ShootingAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.callback_classes = ()
+Runner.env_class = @alpacka.envs.GoogleFootball
+Runner.env_kwargs = {'dump_path': './out'}
+Runner.episode_time_limit = 100
+Runner.n_envs = 20
+Runner.n_epochs = 1
+Runner.n_precollect_epochs = 0
+Runner.network_class = @alpacka.networks.TFMetaGraphNetwork
+Runner.trainer_class = @alpacka.trainers.DummyTrainer
+
+# Parameters for ShootingAgent:
+# ==============================================================================
+ShootingAgent.agent_class = @alpacka.agents.SoftmaxAgent
+ShootingAgent.batch_stepper_class = @alpacka.batch_steppers.LocalBatchStepper
+ShootingAgent.n_envs = 1
+ShootingAgent.n_rollouts = 30
+ShootingAgent.rollout_time_limit = 10
+
+# Parameters for SoftmaxAgent:
+# ==============================================================================
+SoftmaxAgent.linear_annealing_kwargs = None
+SoftmaxAgent.temperature = 2.0
+SoftmaxAgent.with_critic = False
+
+# Parameters for TFMetaGraphNetwork:
+# ==============================================================================
+TFMetaGraphNetwork.model_path = \
+    'checkpoints/baselines/ppo2/academy_3_vs_1_with_keeper/04800'
+TFMetaGraphNetwork.x_name = 'ppo2_model/Ob:0'
+TFMetaGraphNetwork.y_name = 'ppo2_model/pi_1/add:0'
