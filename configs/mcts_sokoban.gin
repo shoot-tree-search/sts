@@ -1,0 +1,76 @@
+# Parameters for convnet_mnist:
+# ==============================================================================
+convnet_mnist.activation = 'relu'
+convnet_mnist.d_conv = 64
+convnet_mnist.d_ff = 128
+convnet_mnist.n_conv_layers = 5
+convnet_mnist.output_activation = None
+
+# Parameters for DeterministicMCTSAgent:
+# ==============================================================================
+DeterministicMCTSAgent.avoid_loops = True
+DeterministicMCTSAgent.backpropagate_intermediate_expansion = True
+DeterministicMCTSAgent.gamma = 0.99
+DeterministicMCTSAgent.n_passes = 50
+DeterministicMCTSAgent.n_leaves_to_expand = 1
+DeterministicMCTSAgent.value_traits_class = @alpacka.agents.deterministic_mcts.ScalarValueTraits
+DeterministicMCTSAgent.value_accumulator_class = @alpacka.agents.deterministic_mcts.ScalarValueAccumulator
+
+# Parameters for KerasNetwork:
+# ==============================================================================
+KerasNetwork.loss = 'mean_squared_error'
+KerasNetwork.loss_weights = None
+KerasNetwork.metrics = ['mae', 'mse']
+KerasNetwork.model_fn = @alpacka.networks.keras.convnet_mnist
+KerasNetwork.optimizer = @tf.keras.optimizers.RMSprop()
+KerasNetwork.train_callbacks = None
+KerasNetwork.weight_decay = 0.
+
+# Parameters for LocalBatchStepper:
+# ==============================================================================
+# None.
+
+# Parameters for Runner:
+# ==============================================================================
+Runner.agent_class = @alpacka.agents.DeterministicMCTSAgent
+Runner.batch_stepper_class = @alpacka.batch_steppers.RayBatchStepper
+Runner.env_class = @alpacka.envs.Sokoban
+Runner.episode_time_limit = 200
+Runner.n_envs = 32
+Runner.n_epochs = 10000
+Runner.n_precollect_epochs = 15
+Runner.network_class = @alpacka.networks.KerasNetwork
+Runner.trainer_class = @alpacka.trainers.SupervisedTrainer
+
+# Parameters for ScalarValueAccumulator:
+# ==============================================================================
+# None.
+
+# Parameters for ScalarValueTraits:
+# ==============================================================================
+ScalarValueTraits.dead_end_value = -2.0
+
+# Parameters for Sokoban:
+# ==============================================================================
+Sokoban.dim_room = (10, 10)
+Sokoban.max_steps = None
+Sokoban.num_boxes = 4
+Sokoban.penalty_for_step = 0.
+Sokoban.reward_box_on_target = 1
+Sokoban.reward_finished = 10
+
+# Parameters for SupervisedTrainer:
+# ==============================================================================
+SupervisedTrainer.batch_size = 32
+SupervisedTrainer.n_steps_per_epoch = 64
+SupervisedTrainer.replay_buffer_capacity = 100000
+SupervisedTrainer.replay_buffer_sampling_hierarchy = ['solved']
+SupervisedTrainer.target = @alpacka.trainers.supervised.target_value
+
+# Parameters for target_value:
+# ==============================================================================
+# None.
+
+# Parameters for RMSprop:
+# ==============================================================================
+RMSprop.learning_rate = 0.00025
