@@ -1,6 +1,9 @@
 ## Project specific
 
 specs
+Vagrantfile
+.vagrant
+*.def
 
 ## MacOS specific
 
