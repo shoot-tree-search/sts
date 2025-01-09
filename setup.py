@@ -15,7 +15,7 @@ setup(
         'neptune-client',
         'numpy',
         'randomdict',
-        'ray==0.8.5',
+        'ray==2.8.1',
         'tensorflow>=2.2.0',
     ],
     extras_require={
